@@ -27,7 +27,6 @@
         h1 {
             color: #00B900;
             margin-bottom: 20px;
-            font-size: 24px;
         }
         .line-btn {
             background-color: #00B900;
@@ -46,26 +45,36 @@
 </head>
 <body>
     <div class="container">
-        <h1>LINE 會員帳號綁定</h1>
-        <p>請綁定您的 LINE 帳號以享受會員服務</p>
-        <button class="line-btn" onclick="login()">立即綁定 LINE 帳號</button>
+        <h1>LINE 會員綁定</h1>
+        <p>請綁定您的 LINE 帳號享受專屬服務</p>
+        <button class="line-btn" onclick="login()">立即綁定</button>
     </div>
 
     <script>
         function login() {
-            // 更新以下參數
-            const LINE_CHANNEL_ID = "2007279514";
-            const CALLBACK_URL = "https://script.google.com/macros/s/AKfycby1pKgpva8SNZ0W5-e7gXB9kP38opGUvIYWummsL9AJP91WB2BtMY-QzqwmsP17leUn/exec";
-            
-            // 構建 LINE 登入 URL
-            const lineAuthUrl = `https://access.line.me/oauth2/v2.1/authorize?` +
-                `response_type=code&` +
-                `client_id=${LINE_CHANNEL_ID}&` +
-                `redirect_uri=${encodeURIComponent(CALLBACK_URL)}&` +
-                `scope=openid%20profile&` +
-                `state=line_${Date.now()}`;
-            
-            window.location.href = lineAuthUrl;
+            // 配置参数（请确保与LINE后台一致）
+            const config = {
+                channelId: "2007279514",
+                callbackUrl: "https://script.google.com/macros/s/AKfycbx3-l6QHBXrnQnm_pWsZ9TWBtQSgxMMdjprBNPPKFobNJjhfrnulWEV-XuUYvYqcjrx/exec",
+                state: "bind_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6)
+            };
+
+            // 构建授权URL
+            const authUrl = new URL("https://access.line.me/oauth2/v2.1/authorize");
+            authUrl.searchParams.append("response_type", "code");
+            authUrl.searchParams.append("client_id", config.channelId);
+            authUrl.searchParams.append("redirect_uri", config.callbackUrl);
+            authUrl.searchParams.append("scope", "openid profile");
+            authUrl.searchParams.append("state", config.state);
+
+            // 调试输出
+            console.log("LINE登录请求参数:", {
+                channelId: config.channelId,
+                callbackUrl: config.callbackUrl,
+                finalUrl: authUrl.toString()
+            });
+
+            window.location.href = authUrl.toString();
         }
     </script>
 </body>
