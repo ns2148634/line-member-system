@@ -5,24 +5,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        button { background: #00B900; color: white; border: none; padding: 10px 20px; cursor: pointer; }
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #00B900;
+        }
+        button { 
+            background: #00B900; 
+            color: white; 
+            border: none; 
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #009900;
+        }
+        .logo {
+            width: 100px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
-    <h1>歡迎加入會員！</h1>
-    <p>點擊下方按鈕綁定你的 LINE 帳號</p>
-    <button onclick="login()">LINE 登入綁定</button>
+    <div class="container">
+        <img src="https://scdn.line-apps.com/n/line_add_friends/btn/zh-Hant.png" alt="LINE Logo" class="logo">
+        <h1>歡迎加入會員！</h1>
+        <p>請點擊下方按鈕綁定您的 LINE 帳號</p>
+        <p>綁定後即可享受會員專屬福利</p>
+        <button onclick="login()">立即綁定 LINE 帳號</button>
+    </div>
 
     <script>
         function login() {
-            // 替換成你的 LINE Login Channel ID 和 Callback URL
-            const lineAuthUrl = https://script.google.com/macros/s/AKfycbwqRFHlCgzWOurzVNm82Cpt08CNcIxz6pW-XAl-PEYZZ5zUPuD8tAd7uS5BXId4wDRZ/exec
-                &client_id=2007279514
-                &redirect_uri=https://script.google.com/macros/s/AKfycbwqRFHlCgzWOurzVNm82Cpt08CNcIxz6pW-XAl-PEYZZ5zUPuD8tAd7uS5BXId4wDRZ/exec
-                &scope=openid%20profile
-                &state=random123`; // 可自訂 state 防 CSRF
+            // LINE 登入授權網址
+            const lineAuthUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=2007279514&redirect_uri=https://script.google.com/macros/s/AKfycbwqRFHlCgzWOurzVNm82Cpt08CNcIxz6pW-XAl-PEYZZ5zUPuD8tAd7uS5BXId4wDRZ/exec&scope=openid%20profile&state=line_login_${Date.now()}`;
             
+            // 跳轉至 LINE 登入頁面
             window.location.href = lineAuthUrl;
         }
     </script>
