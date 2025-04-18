@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LINE 會員綁定</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        button { background: #00B900; color: white; border: none; padding: 10px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>歡迎加入會員！</h1>
+    <p>點擊下方按鈕綁定你的 LINE 帳號</p>
+    <button onclick="login()">LINE 登入綁定</button>
+
+    <script>
+        function login() {
+            // 替換成你的 LINE Login Channel ID 和 Callback URL
+            const lineAuthUrl = https://script.google.com/macros/s/AKfycbwqRFHlCgzWOurzVNm82Cpt08CNcIxz6pW-XAl-PEYZZ5zUPuD8tAd7uS5BXId4wDRZ/exec
+                &client_id=2007279514
+                &redirect_uri=https://script.google.com/macros/s/AKfycbwqRFHlCgzWOurzVNm82Cpt08CNcIxz6pW-XAl-PEYZZ5zUPuD8tAd7uS5BXId4wDRZ/exec
+                &scope=openid%20profile
+                &state=random123`; // 可自訂 state 防 CSRF
+            
+            window.location.href = lineAuthUrl;
+        }
+    </script>
+</body>
+</html>
