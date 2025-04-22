@@ -1,81 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
-    <title>LINE 會員綁定系統</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f8f9fa;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-        h1 {
-            color: #00B900;
-            margin-bottom: 20px;
-        }
-        .line-btn {
-            background-color: #00B900;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .line-btn:hover {
-            background-color: #009900;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>加入會員</title>
 </head>
 <body>
-    <div class="container">
-        <h1>LINE 會員綁定</h1>
-        <p>請綁定您的 LINE 帳號享受專屬服務</p>
-        <button class="line-btn" onclick="login()">立即綁定</button>
-    </div>
+  <h2>加入會員</h2>
+  <form id="memberForm">
+    <label>姓名：<input type="text" name="name" required></label><br>
+    <label>身份證字號：<input type="text" name="id" required></label><br>
+    <label>手機：<input type="tel" name="phone" required></label><br>
+    <label>生日：<input type="date" name="birthday" required></label><br>
+    <label>地址：<input type="text" name="address" required></label><br><br>
+    <button type="submit">送出</button>
+  </form>
 
-    <script>
-        function login() {
-            // 配置参数（请确保与LINE后台一致）
-            const config = {
-                channelId: "2007279514",
-                callbackUrl: "https://script.google.com/macros/s/AKfycbx3-l6QHBXrnQnm_pWsZ9TWBtQSgxMMdjprBNPPKFobNJjhfrnulWEV-XuUYvYqcjrx/exec",
-                state: "bind_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6)
-            };
+  <p id="response"></p>
 
-            // 构建授权URL
-            const authUrl = new URL("https://access.line.me/oauth2/v2.1/authorize");
-            authUrl.searchParams.append("response_type", "code");
-            authUrl.searchParams.append("client_id", config.channelId);
-            authUrl.searchParams.append("redirect_uri", config.callbackUrl);
-            authUrl.searchParams.append("scope", "openid profile");
-            authUrl.searchParams.append("state", config.state);
+  <script>
+    document.getElementById("memberForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = new FormData(form);
 
-            // 调试输出
-            console.log("LINE登录请求参数:", {
-                channelId: config.channelId,
-                callbackUrl: config.callbackUrl,
-                finalUrl: authUrl.toString()
-            });
-
-            window.location.href = authUrl.toString();
-        }
-    </script>
+      fetch("https://script.google.com/macros/s/AKfycbysarFiR7QFoMMRONUlWadd2zrA-N13DgM95Cp1qDloblBAzCeZw4zQpnIuv5q3hgai/exec", {
+        method: "POST",
+        body: data,
+      })
+      .then(res => res.text())
+      .then(txt => {
+        document.getElementById("response").innerText = "送出成功！";
+        form.reset();
+      })
+      .catch(err => {
+        document.getElementById("response").innerText = "發生錯誤：" + err;
+      });
+    });
+  </script>
 </body>
 </html>
