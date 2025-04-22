@@ -1,82 +1,36 @@
-<!-- LINE Login SDK -->
-<script src="https://d.line-scdn.net/liff/2.1/sdk.js"></script>
-<button id="login-button">使用 LINE 登入</button>
-window.onload = function() {
-    // 設定你的 LINE Login Channel ID
-    const channelId = "2007283855";  // 使用你提供的 Channel ID
-    const redirectUri = "https://your-redirect-url"; // 在這裡放你後端處理結果的 URL
-    
-    // 初始化 LIFF (LINE Front-end Framework) SDK
-    liff.init({ liffId: channelId })
-        .then(() => {
-            // 檢查是否已經登入
-            if (liff.isLoggedIn()) {
-                // 已經登入，顯示會員資料
-                liff.getProfile().then(profile => {
-                    // 在這裡獲取 profile 並傳送到 Google Sheets
-                    const userId = profile.userId;
-                    const displayName = profile.displayName;
-                    // 在這裡調用 API 發送資料
-                    sendDataToSheet(function sendDataToSheet(userId, displayName) {
-    fetch('https://script.google.com/macros/s/AKfycbysarFiR7QFoMMRONUlWadd2zrA-N13DgM95Cp1qDloblBAzCeZw4zQpnIuv5q3hgai/exec', {
-        method: 'POST',
-        body: JSON.stringify({ userId: userId, displayName: displayName }),
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => console.log(data))
-    .catch(error => console.error('Error:', error));
-}
-);
-                });
-            } else {
-                // 未登入，顯示登入按鈕
-                document.getElementById('login-button').onclick = function() {
-                    liff.login();
-                };
-            }
-        })
-        .catch(err => console.log('LIFF init error: ' + err));
-};
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>加入會員</title>
+  <meta charset="UTF-8" />
+  <title>LINE 綁定會員</title>
 </head>
 <body>
-  <h2>加入會員</h2>
-  <form id="memberForm">
-    <label>姓名：<input type="text" name="name" required></label><br>
-    <label>身份證字號：<input type="text" name="id" required></label><br>
-    <label>手機：<input type="tel" name="phone" required></label><br>
-    <label>生日：<input type="date" name="birthday" required></label><br>
-    <label>地址：<input type="text" name="address" required></label><br><br>
-    <button type="submit">送出</button>
-  </form>
+  <h1>使用 LINE 登入綁定會員</h1>
+  <button id="login">使用 LINE 登入</button>
 
-  <p id="response"></p>
-
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
-    document.getElementById("memberForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const form = e.target;
-      const data = new FormData(form);
+    const LIFF_ID = "2007283855-1xxdgEdy";
+    const API_URL = "https://script.google.com/macros/s/AKfycbysarFiR7QFoMMRONUlWadd2zrA-N13DgM95Cp1qDloblBAzCeZw4zQpnIuv5q3hgai/exec";
 
-      fetch("https://script.google.com/macros/s/AKfycbysarFiR7QFoMMRONUlWadd2zrA-N13DgM95Cp1qDloblBAzCeZw4zQpnIuv5q3hgai/exec", {
+    async function sendToSheet(userId, displayName) {
+      const res = await fetch(API_URL, {
         method: "POST",
-        body: data,
-      })
-      .then(res => res.text())
-      .then(txt => {
-        document.getElementById("response").innerText = "送出成功！";
-        form.reset();
-      })
-      .catch(err => {
-        document.getElementById("response").innerText = "發生錯誤：" + err;
+        body: JSON.stringify({ userId, displayName }),
+        headers: { "Content-Type": "application/json" }
       });
+      const result = await res.json();
+      alert("會員資料已處理：" + result.status);
+    }
+
+    document.getElementById("login").addEventListener("click", async () => {
+      await liff.init({ liffId: LIFF_ID });
+      if (!liff.isLoggedIn()) {
+        liff.login();
+      } else {
+        const profile = await liff.getProfile();
+        sendToSheet(profile.userId, profile.displayName);
+      }
     });
   </script>
 </body>
