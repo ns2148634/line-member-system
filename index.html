@@ -1,35 +1,68 @@
-<form id="memberForm">
-  <input name="name" placeholder="姓名"><br>
-  <input name="idNumber" placeholder="身份證字號"><br>
-  <input name="phone" placeholder="手機"><br>
-  <input name="birthday" placeholder="生日"><br>
-  <input name="address" placeholder="地址"><br>
-  <button type="submit">送出</button>
-</form>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>LINE 會員系統</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+  <h2>LINE 會員系統</h2>
+  <div id="profile"></div>
 
-<script>
-  const userId = "LINE_USER_ID"; // 實際綁定後取值
+  <form id="memberForm">
+    <label>姓名：<input type="text" id="name" required></label><br>
+    <label>身份證：<input type="text" id="id" required></label><br>
+    <label>手機：<input type="text" id="phone" required></label><br>
+    <label>生日：<input type="date" id="birthday" required></label><br>
+    <label>地址：<input type="text" id="address" required></label><br>
+    <button type="submit">送出</button>
+  </form>
 
-  document.getElementById("memberForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const data = {
-      userId: userId,
-      name: formData.get("name"),
-      idNumber: formData.get("idNumber"),
-      phone: formData.get("phone"),
-      birthday: formData.get("birthday"),
-      address: formData.get("address")
-    };
+  <div id="result"></div>
 
-    fetch("你的GAS網址", {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: { "Content-Type": "application/json" }
-    })
-    .then(res => res.json())
-    .then(res => {
-      alert("會員資料已送出！LINE ID：" + res.userId);
-    });
-  });
-</script>
+  <script>
+    const liffId = "2007283855-5gl2rX24"; // 你的 LIFF ID
+    const scriptUrl = "https://script.google.com/macros/s/AKfycbz42B03uKV-ZV-lMxik0-LyTMxmq7pzRYA2XEnYZk4ryaSs8T78HJbYveUxmS3fD4WJVg/exec";
+
+    async function main() {
+      await liff.init({ liffId });
+      if (!liff.isLoggedIn()) {
+        liff.login();
+      } else {
+        const profile = await liff.getProfile();
+        document.getElementById("profile").innerHTML = `歡迎回來，${profile.displayName}`;
+        document.getElementById("memberForm").addEventListener("submit", function(e) {
+          e.preventDefault();
+
+          const data = {
+            userId: profile.userId,
+            displayName: profile.displayName,
+            name: document.getElementById("name").value,
+            id: document.getElementById("id").value,
+            phone: document.getElementById("phone").value,
+            birthday: document.getElementById("birthday").value,
+            address: document.getElementById("address").value,
+          };
+
+          fetch(scriptUrl, {
+            method: "POST",
+            body: JSON.stringify(data),
+            headers: {
+              "Content-Type": "application/json",
+            }
+          })
+          .then(res => res.json())
+          .then(res => {
+            document.getElementById("result").innerHTML = "✅ 資料已成功儲存！";
+          })
+          .catch(err => {
+            document.getElementById("result").innerHTML = "❌ 發送失敗：" + err;
+          });
+        });
+      }
+    }
+
+    main();
+  </script>
+</body>
+</html>
