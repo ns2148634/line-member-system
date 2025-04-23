@@ -1,37 +1,35 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8" />
-  <title>LINE 綁定會員</title>
-</head>
-<body>
-  <h1>使用 LINE 登入綁定會員</h1>
-  <button id="login">使用 LINE 登入</button>
+<form id="memberForm">
+  <input name="name" placeholder="姓名"><br>
+  <input name="idNumber" placeholder="身份證字號"><br>
+  <input name="phone" placeholder="手機"><br>
+  <input name="birthday" placeholder="生日"><br>
+  <input name="address" placeholder="地址"><br>
+  <button type="submit">送出</button>
+</form>
 
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script>
-    const LIFF_ID = "2007283855-1xxdgEdy";
-    const API_URL = "https://script.google.com/macros/s/AKfycbysarFiR7QFoMMRONUlWadd2zrA-N13DgM95Cp1qDloblBAzCeZw4zQpnIuv5q3hgai/exec";
+<script>
+  const userId = "LINE_USER_ID"; // 實際綁定後取值
 
-    async function sendToSheet(userId, displayName) {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({ userId, displayName }),
-        headers: { "Content-Type": "application/json" }
-      });
-      const result = await res.json();
-      alert("會員資料已處理：" + result.status);
-    }
+  document.getElementById("memberForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = {
+      userId: userId,
+      name: formData.get("name"),
+      idNumber: formData.get("idNumber"),
+      phone: formData.get("phone"),
+      birthday: formData.get("birthday"),
+      address: formData.get("address")
+    };
 
-    document.getElementById("login").addEventListener("click", async () => {
-      await liff.init({ liffId: LIFF_ID });
-      if (!liff.isLoggedIn()) {
-        liff.login();
-      } else {
-        const profile = await liff.getProfile();
-        sendToSheet(profile.userId, profile.displayName);
-      }
+    fetch("你的GAS網址", {
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: { "Content-Type": "application/json" }
+    })
+    .then(res => res.json())
+    .then(res => {
+      alert("會員資料已送出！LINE ID：" + res.userId);
     });
-  </script>
-</body>
-</html>
+  });
+</script>
