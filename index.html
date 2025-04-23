@@ -9,7 +9,6 @@
   <h2>會員系統載入中...</h2>
 
   <script>
-    // 初始化 LIFF
     async function main() {
       await liff.init({ liffId: "2007283855-5gl2rX24" });
       if (!liff.isLoggedIn()) {
@@ -21,7 +20,6 @@
       const userId = profile.userId;
       const displayName = profile.displayName;
 
-      // 傳送資料到 Google Apps Script
       fetch("https://script.google.com/macros/s/AKfycbz42B03uKV-ZV-lMxik0-LyTMxmq7pzRYA2XEnYZk4ryaSs8T78HJbYveUxmS3fD4WJVg/exec", {
         method: "POST",
         body: JSON.stringify({ userId, displayName }),
