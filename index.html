@@ -1,46 +1,113 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>LINE 會員系統</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<meta charset="UTF-8">
+<title>LINE 會員專區</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+body{font-family:sans-serif;margin:0;padding:2rem;text-align:center}
+input,select{margin:.3rem;padding:.3rem;width:70%}
+button{padding:.4rem 1.5rem;margin-top:.8rem}
+</style>
 </head>
 <body>
-  <h2>會員系統載入中...</h2>
+<h2 id="title">會員專區載入中…</h2>
+<div id="area"></div>
 
-  <script>
-    async function main() {
-      try {
-        await liff.init({ liffId: "2007314552-Ep4Y25N4" });
+<script>
+const liffId   = "2007314552-Ep4Y25N4";            // ← 換成你的 LIFF ID
+const apiUrl   = "https://script.google.com/macros/s/AKfycbz42B03uKV-ZV-lMxik0-LyTMxmq7pzRYA2XEnYZk4ryaSs8T78HJbYveUxmS3fD4WJVg/exec";         // ← 換成部署後的 /exec
+const idApiUrl = "https://api.hinet.net/ehs/IDCheck.ashx?id="; // 示範免費驗證
 
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
-        }
+// 呼叫 GAS 後端
+async function callAPI(body){
+  const r = await fetch(apiUrl,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(body)
+  });
+  return r.json();
+}
 
-        const profile = await liff.getProfile();
-        const userId = profile.userId;
-        const displayName = profile.displayName;
+// 前端身分證格式快速檢核（英文字+9碼，簡易版）
+function idFormatOk(id){
+  return /^[A-Z][12]\d{8}$/.test(id.toUpperCase());
+}
 
-        const response = await fetch("https://script.google.com/macros/s/AKfycbz42B03uKV-ZV-lMxik0-LyTMxmq7pzRYA2XEnYZk4ryaSs8T78HJbYveUxmS3fD4WJVg/exec", {
-          method: "POST",
-          body: JSON.stringify({ userId, displayName }),
-          headers: { "Content-Type": "application/json" }
-        });
+async function main(){
+  await liff.init({ liffId });
+  if(!liff.isLoggedIn()){ liff.login(); return; }
 
-        const result = await response.json();
+  const prof = await liff.getProfile();
+  document.getElementById("title").innerText = "會員專區";
 
-        if (result.status === "success") {
-          document.body.innerHTML = `<h2>歡迎，${displayName}！</h2><p>已成功寫入會員系統。</p>`;
-        } else {
-          document.body.innerHTML = `<p>發生錯誤：${result.message}</p>`;
-        }
-      } catch (error) {
-        document.body.innerHTML = `<p>發生錯誤：${error.message}</p>`;
-      }
+  // 先查詢會員
+  let res = await callAPI({mode:"query", userId:prof.userId, displayName:prof.displayName});
+  if(res.ok){
+    const d = res.data;
+    document.getElementById("area").innerHTML = `
+      <p>👤 ${prof.displayName}</p>
+      <p>會員等級：<b>${d.等級}</b></p>
+      <p>月到期：${d.月到期||"未設定"}</p>
+      <p>年到期：${d.年到期||"未設定"}</p>
+      <p>使用次數：${d.使用次數}</p>
+      <p>抽獎次數：${d.抽獎次數}</p>`;
+    return;
+  }
+
+  // 若非會員 → 顯示註冊表單
+  document.getElementById("area").innerHTML = `
+   <p>${res.msg||"尚未註冊"}</p>
+   <form id="f">
+     <input name="name"     placeholder="姓名" required><br>
+     <input name="idNumber" placeholder="身分證字號" required><br>
+     <input name="phone"    placeholder="手機" required><br>
+     生日<br><input type="date" name="birthday" required><br>
+     <input name="address"  placeholder="地址" required><br>
+     會員等級<br>
+     <select name="level" required>
+       <option value="提帆">提帆</option>
+       <option value="啟航">啟航</option>
+       <option value="領航">領航</option>
+       <option value="遠航">遠航</option>
+     </select><br>
+     <button>加入會員</button>
+   </form>
+   <p id="msg"></p>`;
+
+  document.getElementById("f").onsubmit = async e=>{
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const data = Object.fromEntries(fd.entries());
+
+    // 前端驗證格式
+    if(!idFormatOk(data.idNumber)){
+      return document.getElementById("msg").innerText = "身分證格式錯誤";
     }
 
-    main();
-  </script>
+    // 呼叫中華電信免費驗證 API
+    try{
+      const cRes = await fetch(idApiUrl+encodeURIComponent(data.idNumber));
+      const cJson = await cRes.json();
+      if(!cJson.valid) return document.getElementById("msg").innerText="中華電信驗證不通過";
+    }catch(err){
+      return document.getElementById("msg").innerText="無法連線驗證服務";
+    }
+
+    // 送到後端
+    const r = await callAPI({
+      mode:"join",
+      userId:prof.userId,
+      displayName:prof.displayName,
+      payload:data
+    });
+
+    if(r.ok){ location.reload(); }
+    else document.getElementById("msg").innerText = r.msg || "送出失敗";
+  };
+}
+main();
+</script>
 </body>
 </html>
