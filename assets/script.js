@@ -1,7 +1,7 @@
 // 配置区（🚨请替换为您的实际值）
 const CONFIG = {
   LIFF_ID: '2007823594-naDVG5p5', // 您的LIFF ID
-  GAS_URL: 'https://script.google.com/macros/s/AKfycbwL09pUUTSRZE8y7_u8IvmjPpoDN-GpV7q9XS_hqahu5DvinShRiG4laBvkhR8hAAcq/exec'
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbzDpt-n3G6kUWwBrGmTxCwvuVaOM7ABaMdC_IyoyEOGIUC42PTvSUtnRrPsxOitYtPA/exec'
 };
 
 // 全局变量
