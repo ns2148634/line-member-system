@@ -3,63 +3,74 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LINE會員系統</title>
+  <title>會員註冊</title>
   <link rel="stylesheet" href="assets/style.css">
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    input, button { margin: 5px 0; width: 100%; padding: 8px; }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #06C755;
+      color: white;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <h2>會員註冊</h2>
-  <form id="registerForm">
-    <input type="text" name="name" placeholder="姓名" required>
-    <input type="tel" name="phone" placeholder="手機號碼" required>
-    <select name="gender" required>
-      <option value="">選擇性別</option>
-      <option value="男">男</option>
-      <option value="女">女</option>
-    </select>
-    <input type="date" name="birthday" required>
-    <input type="text" name="address" placeholder="地址" required>
-    <button type="submit">提交</button>
-  </form>
+  <div class="container">
+    <h2>會員註冊</h2>
+    <form id="registerForm">
+      <div class="form-group">
+        <label for="name">姓名：</label>
+        <input type="text" id="name" name="name" placeholder="請輸入真實姓名" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="phone">手機號碼：</label>
+        <input type="tel" id="phone" name="phone" placeholder="請輸入聯絡手機" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="gender">性別：</label>
+        <select id="gender" name="gender" required>
+          <option value="">請選擇性別</option>
+          <option value="男">男</option>
+          <option value="女">女</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="birthday">出生年月日：</label>
+        <input type="date" id="birthday" name="birthday" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="address">聯絡地址：</label>
+        <input type="text" id="address" name="address" placeholder="請輸入完整地址" required>
+      </div>
+      
+      <button type="submit">提交註冊</button>
+    </form>
+  </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script>
-    // 配置区（已填入您的信息）
-    const CONFIG = {
-      LIFF_ID: '2007823594-naDVG5p5',
-      GAS_URL: '您的GAS部署URL' // 部署后替换
-    };
-
-    // LIFF初始化
-    async function initLiff() {
-      await liff.init({ liffId: CONFIG.LIFF_ID });
-      if (!liff.isLoggedIn()) {
-        liff.login();
-      } else {
-        const profile = await liff.getProfile();
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const formData = new FormData(e.target);
-          
-          const response = await fetch(CONFIG.GAS_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-              action: 'register',
-              userId: profile.userId,
-              data: Object.fromEntries(formData)
-            })
-          });
-          
-          const result = await response.json();
-          alert(result.success ? '註冊成功！' : '錯誤: ' + (result.error || '未知錯誤'));
-        });
-      }
-    }
-    initLiff();
-  </script>
-      <script src="assets/script.js"></script>
+  <script src="assets/script.js"></script>
 </body>
 </html>
