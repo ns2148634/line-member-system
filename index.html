@@ -56,10 +56,14 @@
         </select>
       </div>
       
-      <div class="form-group">
-        <label for="birthday">出生年月日：</label>
-        <input type="date" id="birthday" name="birthday" required>
-      </div>
+     <div class="form-group">
+  <label for="birthday">生日（出生年月日）：</label>
+  <input type="date" id="birthday" name="birthday" 
+         placeholder="請選擇您的出生日期"
+         required
+         onfocus="this.showPicker()">
+  <small class="hint">請選擇西元年/月/日</small>
+</div>
       
       <div class="form-group">
         <label for="address">聯絡地址：</label>
