@@ -6,6 +6,26 @@
   <title>會員註冊</title>
   <link rel="stylesheet" href="assets/style.css">
   <style>
+    /* 新增已註冊提示樣式 */
+    .already-member {
+      text-align: center;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .back-button {
+      background-color: #06C755;
+      color: white;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
     .form-group {
       margin-bottom: 15px;
     }
@@ -36,6 +56,15 @@
 <body>
   <div class="container">
     <h2>會員註冊</h2>
+    
+    <!-- 新增已註冊提示區塊 -->
+    <div id="alreadyMember" class="already-member">
+      <h3>您已是會員</h3>
+      <p>無需再次註冊</p>
+      <button id="backButton" class="back-button">返回LINE</button>
+    </div>
+    
+    <!-- 原表單，新增id以便控制顯示 -->
     <form id="registerForm">
       <div class="form-group">
         <label for="name">姓名：</label>
