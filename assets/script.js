@@ -9,6 +9,20 @@ let userId = null;
 
 // 初始化LIFF
 async function initLiff() {
+  // 在 initLiff() 函数中添加：
+const urlParams = new URLSearchParams(window.location.search);
+if (location.pathname.includes('member.html') || urlParams.has('page') === 'member') {
+  loadMemberData();
+}
+
+// 新增共用函数
+function goToPage(page) {
+  if (page.includes('member.html')) {
+    location.href = page;
+  } else {
+    location.href = `${page}.html`;
+  }
+}
   try {
     await liff.init({ liffId: CONFIG.LIFF_ID });
     if (!liff.isLoggedIn()) {
