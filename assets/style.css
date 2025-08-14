@@ -39,3 +39,19 @@ button {
     padding: 10px;
   }
 }
+/* 生日字段特别样式 */
+.hint {
+  display: block;
+  color: #666;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+input[type="date"]::before {
+  content: "生日日期";
+  color: #999;
+  margin-right: 8px;
+}
+input[type="date"]:focus::before {
+  content: "";
+}
