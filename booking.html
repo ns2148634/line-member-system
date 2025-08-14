@@ -5,11 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>設備預約</title>
   <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .date-picker {
+      margin: 15px 0;
+    }
+    .time-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .time-slot {
+      padding: 12px;
+      background: #06C755;
+      color: white;
+      text-align: center;
+      border-radius: 8px;
+    }
+    .time-slot.booked {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <h2>預約設備</h2>
-    <div id="timeSlots"></div>
+    <h2>設備預約</h2>
+    <div class="date-picker">
+      <label for="bookingDate">選擇日期：</label>
+      <input type="date" id="bookingDate" min="">
+    </div>
+    <div id="timeSlots" class="time-grid"></div>
   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
