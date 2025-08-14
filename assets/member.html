@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的會員資料</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .member-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .data-row {
+      display: flex;
+      margin: 10px 0;
+    }
+    .data-label {
+      font-weight: bold;
+      width: 100px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="memberData" class="member-card">
+      <!-- 动态加载资料 -->
+      <h2>加載中...</h2>
+    </div>
+    <button onclick="goToPage('register?edit=true')">修改资料</button>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="assets/script.js"></script>
+  <script>
+    // 专属会员资料页逻辑
+    async function loadMemberData() {
+      const profile = await liff.getProfile();
+      const response = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'getMember',
+          userId: profile.userId
+        })
+      });
+      const data = await response.json();
+      
+      document.getElementById('memberData').innerHTML = `
+        <h2>我的會員資料</h2>
+        <div class="data-row"><span class="data-label">註冊時間：</span> ${data.registerTime}</div>
+        <div class="data-row"><span class="data-label">姓名：</span> ${data.name}</div>
+        <div class="data-row"><span class="data-label">手機：</span> ${data.phone}</div>
+        <div class="data-row"><span class="data-label">出生年月日：</span> ${data.birthday}</div>
+        <div class="data-row"><span class="data-label">會員等級：</span> ${data.level}</div>
+        <div class="data-row"><span class="data-label">累積積分：</span> ${data.points}</div>
+      `;
+    }
+    loadMemberData();  
+  </script>
+</body>
+</html>
