@@ -1,135 +1,83 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>會員註冊</title>
+  <title>健身房預約系統</title>
   <link rel="stylesheet" href="assets/style.css">
   <style>
-    /* 新增已註冊提示樣式 */
-    .already-member {
+    .hero {
+      background: linear-gradient(135deg, #06C755 0%, #05a14e 100%);
+      color: white;
+      padding: 2rem;
+      border-radius: 10px;
+      margin-bottom: 2rem;
       text-align: center;
-      padding: 20px;
-      background-color: #f8f9fa;
-      border-radius: 4px;
-      margin-bottom: 20px;
-      display: none;
     }
-    .back-button {
-      background-color: #06C755;
-      color: white;
-      border: none;
-      padding: 12px;
-      width: 100%;
-      border-radius: 4px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 15px;
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
     }
-    .form-group {
-      margin-bottom: 15px;
+    .nav-card {
+      background: white;
+      border-radius: 10px;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
     }
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
+    .nav-card:hover {
+      transform: translateY(-5px);
     }
-    input, select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    button {
-      background-color: #06C755;
-      color: white;
-      border: none;
-      padding: 12px;
-      width: 100%;
-      border-radius: 4px;
-      font-size: 16px;
-      cursor: pointer;
+    .nav-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      color: #06C755;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>會員註冊</h2>
-    
-    <!-- 新增已註冊提示區塊 -->
-    <div id="alreadyMember" class="already-member">
-      <h3>您已是會員</h3>
-      <p>無需再次註冊</p>
-      <button id="backButton" class="back-button">返回LINE</button>
+    <div class="hero">
+      <h1>健身房預約系統</h1>
+      <p>隨時預約您的訓練時段</p>
     </div>
     
-    <!-- 原表單，新增id以便控制顯示 -->
-    <form id="registerForm">
-      <div class="form-group">
-        <label for="name">姓名：</label>
-        <input type="text" id="name" name="name" placeholder="請輸入真實姓名" required>
-      </div>
-      
-      <div class="form-group">
-        <label for="phone">手機號碼：</label>
-        <input type="tel" id="phone" name="phone" placeholder="請輸入聯絡手機" required>
-      </div>
-      
-      <div class="form-group">
-        <label for="gender">性別：</label>
-        <select id="gender" name="gender" required>
-          <option value="">請選擇性別</option>
-          <option value="男">男</option>
-          <option value="女">女</option>
-        </select>
-      </div>
-      
-     <div class="form-group">
-  <label for="birthday">生日（出生年月日）：</label>
-  <input type="date" id="birthday" name="birthday" 
-         placeholder="請選擇您的出生日期"
-         required
-         onfocus="this.showPicker()">
-  <small class="hint">請選擇西元年/月/日</small>
-</div>
-      
-      <div class="form-group">
-        <label for="address">聯絡地址：</label>
-        <input type="text" id="address" name="address" placeholder="請輸入完整地址" required>
-      </div>
-      
-      <button type="submit">提交註冊</button>
-    </form>
+    <div class="nav-grid">
+      <a href="pages/booking.html" class="nav-card">
+        <div class="nav-icon">🏋️</div>
+        <h3>設備預約</h3>
+        <p>預約訓練器材時段</p>
+      </a>
+      <a href="pages/mybookings.html" class="nav-card">
+        <div class="nav-icon">📅</div>
+        <h3>我的預約</h3>
+        <p>查詢/取消預約記錄</p>
+      </a>
+      <a href="pages/profile.html" class="nav-card">
+        <div class="nav-icon">👤</div>
+        <h3>會員資料</h3>
+        <p>查看/修改個人資訊</p>
+      </a>
+      <a href="pages/register.html" class="nav-card">
+        <div class="nav-icon">✏️</div>
+        <h3>註冊會員</h3>
+        <p>加入健身房會員</p>
+      </a>
+    </div>
   </div>
 
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="assets/script.js"></script>
   <script>
-    // 专属会员资料页逻辑
-    async function loadMemberData() {
-      const profile = await liff.getProfile();
-      const response = await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'getMember',
-          userId: profile.userId
-        })
-      });
-      const data = await response.json();
-      
-      document.getElementById('memberData').innerHTML = `
-        <h2>我的會員資料</h2>
-        <div class="data-row"><span class="data-label">註冊時間：</span> ${data.registerTime}</div>
-        <div class="data-row"><span class="data-label">姓名：</span> ${data.name}</div>
-        <div class="data-row"><span class="data-label">手機：</span> ${data.phone}</div>
-        <div class="data-row"><span class="data-label">出生年月日：</span> ${data.birthday}</div>
-        <div class="data-row"><span class="data-label">會員等級：</span> ${data.level}</div>
-        <div class="data-row"><span class="data-label">累積積分：</span> ${data.points}</div>
-      `;
-    }
-    loadMemberData();  
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initPage();
+      // 主頁特殊邏輯（如顯示歡迎訊息）
+      if (memberData) {
+        document.querySelector('.hero p').textContent = `歡迎回來，${memberData.name || '會員'}`;
+      }
+    });
   </script>
-  <script src="assets/script.js"></script>
 </body>
 </html>
