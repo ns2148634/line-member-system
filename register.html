@@ -1,46 +1,134 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>會員註冊</title>
   <link rel="stylesheet" href="../assets/style.css">
   <style>
-    .already-member, #registerForm {
-      max-width: 500px;
+    .form-container {
+      max-width: 600px;
       margin: 0 auto;
-      padding: 20px;
     }
-    .already-member {
+    .form-title {
       text-align: center;
-      display: none;
+      margin-bottom: 1.5rem;
     }
     .form-group {
-      margin-bottom: 15px;
+      margin-bottom: 1.25rem;
     }
-    /* 其他原有樣式保持不變 */
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    .btn-secondary {
+      background: #6C757D;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>會員註冊</h2>
-    
-    <div id="alreadyMember" class="already-member">
-      <h3>您已是會員</h3>
-      <p>無需再次註冊</p>
-      <button id="backButton" class="btn-primary">返回LINE</button>
+    <div class="form-container">
+      <h2 class="form-title" id="form-title">會員註冊</h2>
+      
+      <div id="alreadyMember" class="already-member" style="display:none;">
+        <h3>您已是會員</h3>
+        <p>無需再次註冊</p>
+        <button id="backButton" class="btn-primary">返回首頁</button>
+      </div>
+      
+      <form id="registerForm">
+        <div class="form-group">
+          <label for="name">姓名</label>
+          <input type="text" id="name" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="phone">手機號碼</label>
+          <input type="tel" id="phone" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="gender">性別</label>
+          <select id="gender" required>
+            <option value="">請選擇</option>
+            <option value="男">男</option>
+            <option value="女">女</option>
+            <option value="其他">其他</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="birthday">生日</label>
+          <input type="date" id="birthday" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="address">聯絡地址</label>
+          <input type="text" id="address" required>
+        </div>
+        
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">提交</button>
+          <button type="button" id="cancelBtn" class="btn-secondary">取消</button>
+        </div>
+      </form>
     </div>
-    
-    <form id="registerForm">
-      <!-- 原有表單內容保持不變 -->
-    </form>
   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="../assets/script.js"></script>
   <script>
-    // 註冊表單提交處理
-    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initPage();
+      
+      // 檢查是否為編輯模式
+      const urlParams = new URLSearchParams(window.location.search);
+      const isEditMode = urlParams.has('edit');
+      
+      if (isEditMode) {
+        document.getElementById('form-title').textContent = '編輯會員資料';
+        loadMemberData();
+      }
+      
+      // 表單提交處理
+      document.getElementById('registerForm').addEventListener('submit', handleSubmit);
+      document.getElementById('cancelBtn').addEventListener('click', () => liff.closeWindow());
+      document.getElementById('backButton').addEventListener('click', () => liff.closeWindow());
+    });
+
+    async function loadMemberData() {
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'getProfile',
+            userId: profile.userId
+          })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+          fillForm(result.data);
+        } else {
+          alert('載入會員資料失敗');
+        }
+      } catch (error) {
+        alert('發生錯誤: ' + error.message);
+      }
+    }
+
+    function fillForm(data) {
+      document.getElementById('name').value = data.name || '';
+      document.getElementById('phone').value = data.phone || '';
+      document.getElementById('gender').value = data.gender || '';
+      document.getElementById('birthday').value = data.birthday || '';
+      document.getElementById('address').value = data.address || '';
+    }
+
+    async function handleSubmit(e) {
       e.preventDefault();
       
       const formData = {
@@ -64,15 +152,15 @@
         
         const result = await response.json();
         if (result.success) {
-          alert('註冊成功！');
+          alert('資料已儲存');
           liff.closeWindow();
         } else {
-          alert('註冊失敗: ' + (result.error || '未知錯誤'));
+          alert(`儲存失敗: ${result.error || '未知錯誤'}`);
         }
       } catch (error) {
         alert('發生錯誤: ' + error.message);
       }
-    });
+    }
   </script>
 </body>
 </html>
