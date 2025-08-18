@@ -4,77 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>設備預約</title>
-  <link rel="stylesheet" href="assets/style.css">
-  <style>
-    .date-picker {
-      margin: 15px 0;
-    }
-    .time-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-    .time-slot {
-      padding: 12px;
-      background: #06C755;
-      color: white;
-      text-align: center;
-      border-radius: 8px;
-    }
-    .time-slot.booked {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-  </style>
+  <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
   <div class="container">
     <h2>設備預約</h2>
-    <div class="date-picker">
-      <label for="bookingDate">選擇日期：</label>
-      <input type="date" id="bookingDate" min="">
+    <!-- 預約表單內容 -->
+    <div id="bookingForm">
+      <!-- 這裡添加您的預約表單 -->
     </div>
-    <div id="timeSlots" class="time-grid"></div>
   </div>
 
- <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzDpt-n3G6kUWwBrGmTxCwvuVaOM7ABaMdC_IyoyEOGIUC42PTvSUtnRrPsxOitYtPA/exec";
-const LIFF_ID = "2007823594-naDVG5p5"; // 這裡換成你LINE Developers裡的LIFF ID
-
-async function initLiffAndCheckMember() {
-    try {
-        await liff.init({ liffId: LIFF_ID });
-        if (!liff.isLoggedIn()) {
-            liff.login();
-            return; // 等登入完重新載入頁面
-        }
-
-        const profile = await liff.getProfile();
-        const userId = profile.userId;
-
-        // 呼叫 GAS 檢查會員
-        const res = await fetch(`${GAS_URL}?action=checkMember&lineId=${encodeURIComponent(userId)}`);
-        const data = await res.json();
-
-        if (!data.exists) {
-            alert("您尚未註冊會員，將前往註冊頁面");
-            window.location.href = "register.html";
-        } else {
-            console.log("會員驗證成功：", data.data);
-            // 你可以在這裡把會員資料帶入頁面
-            document.getElementById("memberName").innerText = data.data.name;
-        }
-
-    } catch (err) {
-        console.error("LIFF 初始化或會員檢查失敗", err);
-        alert("系統錯誤，請稍後再試");
-    }
-}
-
-document.addEventListener("DOMContentLoaded", initLiffAndCheckMember);
-</script>
-
-  <script src="assets/booking.js"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="../assets/script.js"></script>
+  <script>
+    // 頁面特定的預約邏輯
+    document.addEventListener('DOMContentLoaded', async () => {
+      const memberStatus = await redirectIfNotMember();
+      if (!memberStatus.exists) return;
+      
+      // 初始化預約頁面邏輯
+    });
+  </script>
 </body>
 </html>
