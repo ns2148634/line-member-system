@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>會員註冊</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .already-member, #registerForm {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .already-member {
+      text-align: center;
+      display: none;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    /* 其他原有樣式保持不變 */
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>會員註冊</h2>
+    
+    <div id="alreadyMember" class="already-member">
+      <h3>您已是會員</h3>
+      <p>無需再次註冊</p>
+      <button id="backButton" class="btn-primary">返回LINE</button>
+    </div>
+    
+    <form id="registerForm">
+      <!-- 原有表單內容保持不變 -->
+    </form>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="../assets/script.js"></script>
+  <script>
+    // 註冊表單提交處理
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = {
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        gender: document.getElementById('gender').value,
+        birthday: document.getElementById('birthday').value,
+        address: document.getElementById('address').value
+      };
+      
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'register',
+            userId: profile.userId,
+            data: formData
+          })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+          alert('註冊成功！');
+          liff.closeWindow();
+        } else {
+          alert('註冊失敗: ' + (result.error || '未知錯誤'));
+        }
+      } catch (error) {
+        alert('發生錯誤: ' + error.message);
+      }
+    });
+  </script>
+</body>
+</html>
