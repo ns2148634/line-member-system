@@ -1,30 +1,177 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>設備預約</title>
   <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .booking-form {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .form-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .form-group {
+      flex: 1;
+    }
+    .time-slots {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .time-slot {
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .time-slot.selected {
+      background: #06C755;
+      color: white;
+      border-color: #06C755;
+    }
+    .time-slot.booked {
+      background: #f5f5f5;
+      color: #999;
+      cursor: not-allowed;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <h2>設備預約</h2>
-    <!-- 預約表單內容 -->
-    <div id="bookingForm">
-      <!-- 這裡添加您的預約表單 -->
+    <div class="booking-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="booking-date">選擇日期</label>
+          <input type="date" id="booking-date" required>
+        </div>
+        <div class="form-group">
+          <label for="equipment">選擇設備</label>
+          <select id="equipment" required>
+            <option value="">請選擇設備</option>
+            <option value="treadmill">跑步機</option>
+            <option value="elliptical">橢圓機</option>
+            <option value="weights">重量訓練區</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>選擇時段</label>
+        <div class="time-slots" id="time-slots">
+          <!-- 由JS動態生成 -->
+        </div>
+      </div>
+      
+      <button type="button" id="submit-booking" class="btn-primary">確認預約</button>
     </div>
   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="../assets/script.js"></script>
   <script>
-    // 頁面特定的預約邏輯
     document.addEventListener('DOMContentLoaded', async () => {
-      const memberStatus = await redirectIfNotMember();
-      if (!memberStatus.exists) return;
+      await initPage();
+      if (!memberData) return;
       
-      // 初始化預約頁面邏輯
+      // 初始化日期選擇器（預設明天）
+      const dateInput = document.getElementById('booking-date');
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      dateInput.valueAsDate = tomorrow;
+      dateInput.min = new Date().toISOString().split('T')[0];
+      
+      // 時段生成
+      generateTimeSlots();
+      
+      // 日期變化時重新載入時段
+      dateInput.addEventListener('change', generateTimeSlots);
+      
+      // 預約提交
+      document.getElementById('submit-booking').addEventListener('click', submitBooking);
     });
+
+    async function generateTimeSlots() {
+      const date = document.getElementById('booking-date').value;
+      if (!date) return;
+      
+      const slotsContainer = document.getElementById('time-slots');
+      slotsContainer.innerHTML = '<div class="loading-text">載入中...</div>';
+      
+      try {
+        // 獲取已預約時段
+        const bookedSlots = await fetchBookedSlots(date);
+        
+        // 生成可預約時段 (每小時一個時段)
+        slotsContainer.innerHTML = '';
+        for (let hour = 6; hour < 22; hour++) {
+          const slotTime = `${hour}:00 - ${hour + 1}:00`;
+          const isBooked = bookedSlots.includes(slotTime);
+          
+          const slot = document.createElement('div');
+          slot.className = `time-slot ${isBooked ? 'booked' : ''}`;
+          slot.textContent = slotTime;
+          slot.dataset.time = slotTime;
+          
+          if (!isBooked) {
+            slot.addEventListener('click', function() {
+              document.querySelectorAll('.time-slot').forEach(s => 
+                s.classList.remove('selected'));
+              this.classList.add('selected');
+            });
+          }
+          
+          slotsContainer.appendChild(slot);
+        }
+      } catch (error) {
+        slotsContainer.innerHTML = '<div class="error-text">載入時段失敗</div>';
+        console.error(error);
+      }
+    }
+
+    async function submitBooking() {
+      const date = document.getElementById('booking-date').value;
+      const equipment = document.getElementById('equipment').value;
+      const selectedSlot = document.querySelector('.time-slot.selected');
+      
+      if (!date || !equipment || !selectedSlot) {
+        alert('請填寫完整預約資訊');
+        return;
+      }
+      
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'createBooking',
+            userId: profile.userId,
+            name: memberData.name,
+            phone: memberData.phone,
+            date: date,
+            time: selectedSlot.dataset.time,
+            equipment: equipment
+          })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+          alert('預約成功！');
+          generateTimeSlots(); // 刷新時段
+        } else {
+          alert(`預約失敗: ${result.error || '未知錯誤'}`);
+        }
+      } catch (error) {
+        alert('發生錯誤: ' + error.message);
+      }
+    }
   </script>
 </body>
 </html>
