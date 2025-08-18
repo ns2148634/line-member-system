@@ -1,53 +1,69 @@
-// LIFF初始化與會員驗證
 const LIFF_ID = '2007823594-naDVG5p5';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzDpt-n3G6kUWwBrGmTxCwvuVaOM7ABaMdC_IyoyEOGIUC42PTvSUtnRrPsxOitYtPA/exec';
 
 let profile = null;
+let memberData = null;
 
+// 初始化LIFF
 async function initLiff() {
-  await liff.init({ liffId: LIFF_ID });
-  if (!liff.isLoggedIn()) {
-    liff.login();
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return false;
+    }
+    profile = await liff.getProfile();
+    return true;
+  } catch (err) {
+    showError('LINE初始化失敗', err);
     return false;
   }
-  profile = await liff.getProfile();
-  return true;
 }
 
+// 檢查會員狀態
 async function checkMemberStatus() {
   try {
     const response = await fetch(`${GAS_URL}?action=checkMember&userId=${profile.userId}`);
     return await response.json();
-  } catch (error) {
-    console.error('檢查會員失敗:', error);
+  } catch (err) {
+    showError('檢查會員失敗', err);
     return { exists: false };
   }
 }
 
-async function redirectIfNotMember() {
-  const isInitialized = await initLiff();
-  if (!isInitialized) return;
-  
-  const memberStatus = await checkMemberStatus();
-  const isRegisterPage = window.location.pathname.includes('register.html');
-  
-  if (!memberStatus.exists && !isRegisterPage) {
-    window.location.href = 'register.html';
-  } else if (memberStatus.exists && isRegisterPage) {
-    document.getElementById('registerForm').style.display = 'none';
-    document.getElementById('alreadyMember').style.display = 'block';
+// 頁面初始化
+async function initPage() {
+  showLoading();
+  try {
+    const isLIFFReady = await initLiff();
+    if (!isLIFFReady) return;
+
+    const status = await checkMemberStatus();
+    handleMemberStatus(status);
+  } finally {
+    hideLoading();
   }
-  
-  return memberStatus;
 }
 
-// 頁面初始化
-document.addEventListener('DOMContentLoaded', async () => {
-  await redirectIfNotMember();
-  
-  // 返回按鈕事件
-  const backButton = document.getElementById('backButton');
-  if (backButton) {
-    backButton.addEventListener('click', () => liff.closeWindow());
-  }
-});
+// 顯示錯誤訊息
+function showError(title, error) {
+  console.error(title, error);
+  alert(`${title}\n${error.message}`);
+}
+
+// 載入動畫控制
+function showLoading() {
+  document.body.insertAdjacentHTML('beforeend', `
+    <div class="loading-overlay">
+      <div class="loading-spinner"></div>
+    </div>
+  `);
+}
+
+function hideLoading() {
+  const loader = document.querySelector('.loading-overlay');
+  if (loader) loader.remove();
+}
+
+// 啟動頁面
+document.addEventListener('DOMContentLoaded', initPage);
