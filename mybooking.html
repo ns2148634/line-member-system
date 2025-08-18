@@ -1,40 +1,162 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>我的預約</title>
   <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .booking-list {
+      margin-top: 1.5rem;
+    }
+    .booking-card {
+      background: white;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .booking-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    .booking-status {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+    }
+    .status-pending {
+      background: #FFF3CD;
+      color: #856404;
+    }
+    .status-confirmed {
+      background: #D4EDDA;
+      color: #155724;
+    }
+    .booking-details {
+      color: #666;
+      font-size: 0.9rem;
+    }
+    .cancel-btn {
+      background: #DC3545;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+      cursor: pointer;
+    }
+    .no-bookings {
+      text-align: center;
+      color: #666;
+      margin-top: 2rem;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <h2>我的預約</h2>
-    <div id="bookingsList"></div>
+    <div class="booking-list" id="booking-list">
+      <!-- 由JS動態載入 -->
+    </div>
   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="../assets/script.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      const memberStatus = await redirectIfNotMember();
-      if (!memberStatus.exists) return;
+      await initPage();
+      if (!memberData) return;
+      loadBookings();
+    });
+
+    async function loadBookings() {
+      const listContainer = document.getElementById('booking-list');
+      listContainer.innerHTML = '<div class="loading-text">載入中...</div>';
       
-      // 獲取並顯示預約記錄
-      const response = await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'getMyBookings',
-          userId: profile.userId
-        })
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'getMyBookings',
+            userId: profile.userId
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.bookings && result.bookings.length > 0) {
+          renderBookings(result.bookings);
+        } else {
+          listContainer.innerHTML = `
+            <div class="no-bookings">
+              <p>目前沒有預約記錄</p>
+              <a href="booking.html" class="btn-primary">立即預約</a>
+            </div>
+          `;
+        }
+      } catch (error) {
+        listContainer.innerHTML = '<div class="error-text">載入失敗</div>';
+        console.error(error);
+      }
+    }
+
+    function renderBookings(bookings) {
+      const listContainer = document.getElementById('booking-list');
+      listContainer.innerHTML = '';
+      
+      bookings.forEach(booking => {
+        const bookingElement = document.createElement('div');
+        bookingElement.className = 'booking-card';
+        bookingElement.innerHTML = `
+          <div class="booking-header">
+            <strong>${booking.date} ${booking.time}</strong>
+            <span class="booking-status status-${booking.status === '待確認' ? 'pending' : 'confirmed'}">
+              ${booking.status}
+            </span>
+          </div>
+          <div class="booking-details">
+            設備: ${booking.equipment || '未指定'}
+          </div>
+          ${booking.status === '待確認' ? 
+            `<button class="cancel-btn" data-id="${booking.id}">取消預約</button>` : ''}
+        `;
+        listContainer.appendChild(bookingElement);
       });
       
-      const result = await response.json();
-      renderBookings(result.bookings);
-    });
-    
-    function renderBookings(bookings) {
-      // 渲染預約列表
+      // 綁定取消按鈕事件
+      document.querySelectorAll('.cancel-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+          if (confirm('確定要取消此預約嗎？')) {
+            await cancelBooking(this.dataset.id);
+          }
+        });
+      });
+    }
+
+    async function cancelBooking(bookingId) {
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'cancelBooking',
+            bookingId: bookingId
+          })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+          alert('預約已取消');
+          loadBookings(); // 刷新列表
+        } else {
+          alert(`取消失敗: ${result.error || '未知錯誤'}`);
+        }
+      } catch (error) {
+        alert('發生錯誤: ' + error.message);
+      }
     }
   </script>
 </body>
