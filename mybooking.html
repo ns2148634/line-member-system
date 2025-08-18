@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的預約</title>
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>我的預約</h2>
+    <div id="bookingsList"></div>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="../assets/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const memberStatus = await redirectIfNotMember();
+      if (!memberStatus.exists) return;
+      
+      // 獲取並顯示預約記錄
+      const response = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'getMyBookings',
+          userId: profile.userId
+        })
+      });
+      
+      const result = await response.json();
+      renderBookings(result.bookings);
+    });
+    
+    function renderBookings(bookings) {
+      // 渲染預約列表
+    }
+  </script>
+</body>
+</html>
